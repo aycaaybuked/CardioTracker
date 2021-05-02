@@ -67,7 +67,113 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(INTENT_REST_INTERVAL, restSeconds)
             this.startActivity(intent)
         }
-
+        iniButtonListener()
     }
+    private fun iniButtonListener() {
+        setNumberMinusB.setOnClickListener {
+            plusOrMinus1(setNumberTV, false)
+        }
+        setNumberPlusB.setOnClickListener {
+            plusOrMinus1(setNumberTV)
+        }
+        workIntervalPlusB.setOnClickListener {
+            plus10(workIntervalTV)
+        }
+        workIntervalMinusB.setOnClickListener {
+            minus10(workIntervalTV)
+        }
+        restIntervalPlusB.setOnClickListener {
+            plus10(restIntervalTV)
+        }
+        restIntervalMinusB.setOnClickListener {
+            minus10(restIntervalTV)
+        }
+
+        setButtonLongClick(restIntervalPlusB, restIntervalTV)
+        setButtonLongClick(workIntervalPlusB, workIntervalTV)
+        setButtonLongClick(restIntervalMinusB, restIntervalTV, add = false)
+        setButtonLongClick(workIntervalMinusB, workIntervalTV, add = false)
+        setButtonLongClick(setNumberMinusB, setNumberTV, add = false, time = false)
+        setButtonLongClick(setNumberPlusB, setNumberTV, add = true, time = false)
+    }
+
+    private fun plus10(textViewTime: TextView) {
+        var currentTime = textViewTime.text.toString()
+        var seconds = getTimeFromStr(currentTime).second
+        var minutes = getTimeFromStr(currentTime).first
+        if (seconds < 50) {
+            seconds += 10
+        } else if (seconds == 50) {
+            seconds = 0
+            minutes += 1
+        }
+        currentTime = String.format(FORMAT, minutes) + ":" + String.format(FORMAT, seconds)
+        textViewTime.text = currentTime
+    }
+
+    private fun minus10(textViewTime: TextView) {
+        var currentTime = textViewTime.text.toString()
+        var seconds = getTimeFromStr(currentTime).second
+        var minutes = getTimeFromStr(currentTime).first
+        if (seconds > 0) {
+            seconds -= 10
+        } else if (seconds == 0) {
+            if (minutes != 0) {
+                seconds = 50
+                minutes -= 1
+            } else {
+                seconds = 0
+                minutes = 0
+            }
+        }
+        currentTime = String.format(FORMAT, minutes) + ":" + String.format(FORMAT, seconds)
+        textViewTime.text = currentTime
+    }
+
+    private fun plusOrMinus1(textViewSet: TextView, add: Boolean = true) {
+        var currentSetNumber = textViewSet.text.toString().toInt()
+        if (add) {
+            currentSetNumber += 1
+        } else if (currentSetNumber != 0 && !add) {
+            currentSetNumber -= 1
+        } else if (currentSetNumber == 0 && !add) {
+            currentSetNumber = 0
+        }
+        textViewSet.text = currentSetNumber.toString()
+    }
+
+    private fun setButtonLongClick(
+            button: ImageButton,
+            textView: TextView,
+            add: Boolean = true,
+            time: Boolean = true
+    ) {
+        button.setOnLongClickListener(object : OnLongClickListener {
+            private val mHandler: Handler = Handler()
+            private val incrementRunnable: Runnable = object : Runnable {
+                override fun run() {
+                    mHandler.removeCallbacks(this)
+                    if (button.isPressed) {
+                        if (time) {
+                            if (add) {
+                                plus10(textView)
+                            } else {
+                                minus10(textView)
+                            }
+                        } else {
+                            plusOrMinus1(textView, add)
+                        }
+                        mHandler.postDelayed(this, 100)
+                    }
+                }
+            }
+
+            override fun onLongClick(view: View): Boolean {
+                mHandler.postDelayed(incrementRunnable, 0)
+                return true
+            }
+        })
+    }
+
 
 }
